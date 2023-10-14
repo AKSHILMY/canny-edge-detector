@@ -1,5 +1,5 @@
 os:
-  input_path : ../data
+  input_dir : ../data
 
 kernel:
   sobel : 
@@ -12,3 +12,8 @@ direction:
 hysteresis:
   low_threshold : 0.10
   high_threshold : 0.30
+
+image:
+  extensions: ['.jpg', '.jpeg', '.png','.bmp']
+  width : 480
+  height : 640
