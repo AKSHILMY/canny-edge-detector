@@ -4,8 +4,8 @@ from constants import Constants
 import yaml
 
 class CannyEdgeDetector():
-    def __init__(self) -> None:
-        pass
+    def __init__(self,config_file_path) -> None:
+        self.load_configuration(config_file_path)
 
     def convolve(self, image, kernel):
         """
@@ -18,21 +18,19 @@ class CannyEdgeDetector():
             self.config = yaml.safe_load(f)
 
     def get_gradients(self, image, kernel:str = 'sobel', direction :str = 'xy'):
+        kernel = self.config['kernel'][kernel]
         if direction == 'xy':
-            if kernel == 'sobel':
-                # TODO : Utilize the manually defined convolve function
-                grad_x = ndimage.convolve(image,np.array(Constants.SOBEL_X.value))
-                grad_y = ndimage.convolve(image,np.array(Constants.SOBEL_Y.value))
-            else:
-                raise Exception(f"Gradient Operator '{kernel}' not found")
+            # TODO : Utilize the manually defined convolve function
+            grad_x = ndimage.convolve(image,np.array(kernel['x']))
+            grad_y = ndimage.convolve(image,np.array(kernel['y']))
             return grad_x/np.max(grad_x),grad_y/np.max(grad_y)
         elif direction == 'x':
             # TODO : Utilize the manually defined convolve function
-            grad_x = ndimage.convolve(image,np.array(Constants.SOBEL_X.value))
+            grad_x = ndimage.convolve(image,np.array(kernel['x']))
             return grad_x/np.max(grad_x)
         elif direction == 'y':
             # TODO : Utilize the manually defined convolve function
-            grad_y = ndimage.convolve(image,np.array(Constants.SOBEL_Y))
+            grad_y = ndimage.convolve(image,np.array(kernel['y']))
             return grad_y/np.max(grad_y)
         else:
             raise Exception(f"Direction '{direction}' not found")
@@ -45,10 +43,7 @@ class CannyEdgeDetector():
         return np.degrees(np.arctan2(grad_y, grad_x))
     
     def closest_dir_function(self,grad_dir):
-        kernel = np.array([[135, 90, 45],
-                        [180, 0, 135],
-                        [225, 270, 315]])
-
+        kernel = np.array(self.config['direction']['kernel'])
         closest_dir_arr = ndimage.convolve(grad_dir, kernel, mode='constant', cval=0.0)
         return closest_dir_arr
 
@@ -94,8 +89,8 @@ class CannyEdgeDetector():
                 
                         
     def hysteresis_thresholding(self,img) :
-        low_ratio = 0.10
-        high_ratio = 0.30
+        low_ratio = self.config['hysteresis']['low_threshold']
+        high_ratio = self.config['hysteresis']['high_threshold']
         diff = np.max(img) - np.min(img)
         t_low = np.min(img) + low_ratio * diff
         t_high = np.min(img) + high_ratio * diff

@@ -1,0 +1,14 @@
+os:
+  input_path : ../data
+
+kernel:
+  sobel : 
+    x : [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]
+    y : [[-1, -2, -1], [0, 0, 0], [1, 2, 1]]
+
+direction:
+  kernel : [[135, 90, 45],[180, 0, 135],[225, 270, 315]]
+    
+hysteresis:
+  low_threshold : 0.10
+  high_threshold : 0.30

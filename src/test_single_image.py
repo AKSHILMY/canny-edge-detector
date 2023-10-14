@@ -11,7 +11,7 @@ parser.add_argument('--input', type=str, help='path to input image file')
 parser.add_argument('--output', type=str, help='path to output image file')
 args = parser.parse_args()
 
-c = CannyEdgeDetector()
+c = CannyEdgeDetector(config_file_path="config.yaml")
 
 read_image = imageio.imread(args.input)
 gray_input_img = rgb2gray(read_image)
