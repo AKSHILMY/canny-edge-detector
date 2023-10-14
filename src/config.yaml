@@ -17,3 +17,7 @@ image:
   extensions: ['.jpg', '.jpeg', '.png','.bmp']
   width : 480
   height : 640
+
+operations:
+  convolution : 
+    mode : 'manual'

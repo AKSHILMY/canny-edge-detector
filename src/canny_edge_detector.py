@@ -12,10 +12,29 @@ class CannyEdgeDetector():
         os.makedirs(self.output_dir,exist_ok = True)
 
     def convolve(self, image, kernel):
-        """
-        TODO: Implement convolution function to convolve
-        """
-        pass
+        mode = self.config['operations']['convolution']['mode']
+        if mode == 'auto':
+            return ndimage.convolve(image, kernel, mode='constant', cval=0.0)
+        elif mode == 'manual':
+            image_height, image_width = image.shape
+            kernel_height, kernel_width = kernel.shape
+
+            pad_height = kernel_height // 2
+            pad_width = kernel_width // 2
+
+            padded_image = np.zeros((image_height + 2 * pad_height, image_width + 2 * pad_width))
+            padded_image[pad_height:-pad_height, pad_width:-pad_width] = image
+
+            output_image = np.zeros_like(image)
+
+            for i in range(pad_height, image_height + pad_height):
+                for j in range(pad_width, image_width + pad_width):
+                    output_image[i - pad_height, j - pad_width] = np.sum(
+                        kernel * padded_image[i - pad_height:i + pad_height + 1, j - pad_width:j + pad_width + 1]
+                    )
+            return output_image
+        else:
+            raise Exception(f"Mode '{mode}' not found. Use either 'auto' or 'manual' ")
     
     def load_configuration(self, config_file_path):
         with open(config_file_path, 'r') as f:
@@ -25,16 +44,16 @@ class CannyEdgeDetector():
         kernel = self.config['kernel'][kernel]
         if direction == 'xy':
             # TODO : Utilize the manually defined convolve function
-            grad_x = ndimage.convolve(image,np.array(kernel['x']))
-            grad_y = ndimage.convolve(image,np.array(kernel['y']))
+            grad_x = self.convolve(image,np.array(kernel['x']))
+            grad_y = self.convolve(image,np.array(kernel['y']))
             return grad_x/np.max(grad_x),grad_y/np.max(grad_y)
         elif direction == 'x':
             # TODO : Utilize the manually defined convolve function
-            grad_x = ndimage.convolve(image,np.array(kernel['x']))
+            grad_x = self.convolve(image,np.array(kernel['x']))
             return grad_x/np.max(grad_x)
         elif direction == 'y':
             # TODO : Utilize the manually defined convolve function
-            grad_y = ndimage.convolve(image,np.array(kernel['y']))
+            grad_y = self.convolve(image,np.array(kernel['y']))
             return grad_y/np.max(grad_y)
         else:
             raise Exception(f"Direction '{direction}' not found")
@@ -48,7 +67,7 @@ class CannyEdgeDetector():
     
     def closest_dir_function(self,grad_dir):
         kernel = np.array(self.config['direction']['kernel'])
-        closest_dir_arr = ndimage.convolve(grad_dir, kernel, mode='constant', cval=0.0)
+        closest_dir_arr = self.convolve(grad_dir, kernel)
         return closest_dir_arr
 
     def non_maximal_suppressor(self,grad_mag, closest_dir) :
