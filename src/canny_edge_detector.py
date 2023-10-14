@@ -97,20 +97,15 @@ class CannyEdgeDetector():
         
         temp_img = np.copy(img)
         
-        #Assign values to pixels
         for i in range(1, int(img.shape[0] - 1)) :
             for j in range(1, int(img.shape[1] - 1)) :
-                #Strong pixels
                 if(img[i, j] > t_high) :
                     temp_img[i, j] = 2
-                #Weak pixels
                 elif(img[i, j] < t_low) :
                     temp_img[i, j] = 0
-                #Intermediate pixels
                 else :
                     temp_img[i, j] = 1
         
-        #Include weak pixels that are connected to chain of strong pixels 
         total_strong = np.sum(temp_img == 2)
         while(1) :
             self.DFS(temp_img)
@@ -118,7 +113,6 @@ class CannyEdgeDetector():
                 break
             total_strong = np.sum(temp_img == 2)
         
-        #Remove weak pixels
         for i in range(1, int(temp_img.shape[0] - 1)) :
             for j in range(1, int(temp_img.shape[1] - 1)) :
                 if(temp_img[i, j] == 1) :
