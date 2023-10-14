@@ -1,11 +1,15 @@
+import os
 import numpy as np
 from scipy import ndimage
-from constants import Constants
 import yaml
+import imageio
+from utils import rgb2gray
 
 class CannyEdgeDetector():
     def __init__(self,config_file_path) -> None:
         self.load_configuration(config_file_path)
+        self.output_dir = "../outputs/"
+        os.makedirs(self.output_dir,exist_ok = True)
 
     def convolve(self, image, kernel):
         """
@@ -120,3 +124,23 @@ class CannyEdgeDetector():
         
         temp_img = temp_img/np.max(temp_img)
         return temp_img    
+    
+    def detect_edges(self):
+        for root, dirs, files in os.walk(self.config['os']['input_dir']):
+            for filename in files:
+                file_path = os.path.join(root, filename)
+                if file_path.lower().endswith(tuple(self.config['image']['extensions'])):
+                    self.detect_edge_of_image(image_path = file_path)
+
+    def detect_edge_of_image(self,image_path):
+        read_image = imageio.imread(image_path)
+        gray_input_img = rgb2gray(read_image)
+        blur_img = ndimage.gaussian_filter(gray_input_img, sigma = 1.0)
+        x_grad,y_grad = self.get_gradients(image=blur_img)
+        grad_magnitude = self.get_gradient_magnitude(x_grad,y_grad)
+        grad_direction = self.get_gradient_direction(x_grad,y_grad)
+        closest_dir = self.closest_dir_function(grad_direction)
+        thinned_output = self.non_maximal_suppressor(grad_magnitude, closest_dir)
+        output_img = self.hysteresis_thresholding(thinned_output)
+        your_array = (output_img * 255).astype(np.uint8)
+        imageio.imwrite(os.path.join(self.output_dir,os.path.basename(image_path)), your_array)       
