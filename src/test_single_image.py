@@ -22,7 +22,6 @@ grad_direction = c.get_gradient_direction(x_grad,y_grad)
 closest_dir = c.closest_dir_function(grad_direction)
 thinned_output = c.non_maximal_suppressor(grad_magnitude, closest_dir)
 output_img = c.hysteresis_thresholding(thinned_output)
-output_img.shape
 your_array = (output_img * 255).astype(np.uint8)
 imageio.imwrite(args.output, your_array)
 
